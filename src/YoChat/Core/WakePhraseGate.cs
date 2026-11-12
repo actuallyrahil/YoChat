@@ -20,7 +20,9 @@ public sealed class WakePhraseGate
 
     public bool TryAccept(string recognizedText, float confidence, DateTimeOffset now)
     {
-        if (!string.Equals(Normalize(recognizedText), WakePhrase, StringComparison.OrdinalIgnoreCase) ||
+        if (WakePhrase.Length == 0 || !float.IsFinite(confidence) || confidence < 0 || confidence > 1 ||
+            !float.IsFinite(ConfidenceThreshold) ||
+            !string.Equals(Normalize(recognizedText), WakePhrase, StringComparison.OrdinalIgnoreCase) ||
             confidence < ConfidenceThreshold)
         {
             return false;
@@ -39,7 +41,6 @@ public sealed class WakePhraseGate
     }
 
     public static string Normalize(string? value) =>
-        string.Join(' ', (value ?? string.Empty)
+        string.Join(' ', new string((value ?? string.Empty).Select(c => char.IsPunctuation(c) ? ' ' : c).ToArray())
             .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 }
-

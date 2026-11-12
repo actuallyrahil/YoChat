@@ -24,6 +24,8 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
+          dotnet run --project tests/YoChat.Tests/YoChat.Tests.csproj -c Release --no-restore -- --audio-regression artifacts/YoChat-win-x64/models/vosk-model-small-en-us-0.15 tests/fixtures/wake-audio
+          if ($LASTEXITCODE -ne 0) { throw 'Acoustic wake regression failed' }
           $check = Start-Process -FilePath artifacts/YoChat-win-x64/YoChat.exe -ArgumentList '--self-test' -Wait -PassThru -WindowStyle Hidden
           if ($check.ExitCode -ne 0) { throw 'Packaged application self-test failed' }
           Compress-Archive -Path artifacts/YoChat-win-x64/* -DestinationPath artifacts/YoChat-win-x64.zip

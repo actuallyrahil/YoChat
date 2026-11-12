@@ -13,9 +13,17 @@ if (args.Contains("--capture-status", StringComparer.OrdinalIgnoreCase))
     return status.State == ChatGptCaptureState.Unavailable ? 1 : 0;
 }
 
+if (args.Length == 3 && args[0] == "--audio-regression")
+{
+    AcousticWakeTests.Run(args[1], args[2]);
+    return 0;
+}
+
 var tests = new (string Name, Action Run)[]
 {
     ("Wake phrase normalization", WakePhraseNormalization),
+    ("Wake grammar rejects unknown speech", WakeRecognitionRegressionTests.GrammarAllowsUnrelatedSpeech),
+    ("Exact wake utterance and finite confidence", WakeRecognitionRegressionTests.ExactUtteranceOnly),
     ("Confidence threshold", ConfidenceThreshold),
     ("Cooldown debounce", CooldownDebounce),
     ("Hotkey parsing and canonical format", HotkeyParsing),
@@ -160,6 +168,3 @@ static void TranscriptPaths()
     Assert(YoChat.BubbleEngine.ResolveTranscriptPath(configured) == Path.GetFullPath(configured), "Explicit source must take precedence.");
     Assert(Path.GetFileName(YoChat.BubbleEngine.ResolveTranscriptPath("")) == "realtime-voice-continuity.json", "Default source must be the direct transcript.");
 }
-
-
-

@@ -142,11 +142,11 @@ public sealed class TrayApplicationContext : ApplicationContext
         {
             _paused = true;
             _pauseItem.Text = "Resume listening";
-            SetStatus("Microphone or Windows Speech unavailable", _errorIcon);
+            SetStatus("Microphone or wake model unavailable", _errorIcon);
             _trayIcon.ShowBalloonTip(
                 5000,
                 "YoChat could not start listening",
-                $"{ex.Message} Check Windows microphone privacy and installed Speech language settings.",
+                $"{ex.Message} Check microphone permissions and that the complete wake model is installed.",
                 ToolTipIcon.Error);
         }
     }
@@ -207,13 +207,15 @@ public sealed class TrayApplicationContext : ApplicationContext
 
     private void RecognitionDetected(object? sender, WakePhraseDetectedEventArgs e)
     {
-        if (_paused || !_gate.TryAccept(e.Text, e.Confidence, DateTimeOffset.UtcNow))
+        var gate = _gate;
+        if (_paused || !gate.TryAccept(e.Text, e.Confidence, DateTimeOffset.UtcNow))
         {
             return;
         }
 
         RunOnUi(() =>
         {
+            if (_paused || _exiting || !ReferenceEquals(gate, _gate)) return;
             try
             {
                 var captureStatus = _captureDetector.GetStatus();
@@ -296,4 +298,3 @@ public sealed class TrayApplicationContext : ApplicationContext
     private static WakePhraseGate CreateGate(AppSettings settings) =>
         new(settings.WakePhrase, settings.ConfidenceThreshold, TimeSpan.FromSeconds(settings.CooldownSeconds));
 }
-

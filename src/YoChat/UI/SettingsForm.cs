@@ -73,7 +73,7 @@ public sealed class SettingsForm : Form
         {
             AutoSize = true,
             MaximumSize = new Size(470, 0),
-            Text = "Recognition uses Windows Speech locally. YoChat does not save or upload microphone audio.",
+            Text = "Recognition uses a local Vosk wake model. YoChat does not save or upload microphone audio.",
             ForeColor = SystemColors.GrayText,
             Margin = new Padding(3, 8, 3, 8)
         };
@@ -144,4 +144,3 @@ public sealed class SettingsForm : Form
         Close();
     }
 }
-

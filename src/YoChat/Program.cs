@@ -15,6 +15,12 @@ static class Program
                 BubbleView.Test();
                 using var settings = new UI.SettingsForm(new Core.AppSettings());
                 settings.CreateControl();
+                using var model = new Vosk.Model(Path.Combine(AppContext.BaseDirectory, "models", "vosk-model-small-en-us-0.15"));
+                using var decoder = new Vosk.VoskRecognizer(model, 16000, Speech.WindowsSpeechRecognizer.CreateListeningGrammar("Yo Chat"));
+                decoder.SetWords(true);
+                decoder.AcceptWaveform(new byte[32000], 32000);
+                if (Speech.WindowsSpeechRecognizer.ParseResult(decoder.FinalResult()) is not null)
+                    throw new InvalidOperationException("Silence produced a wake candidate.");
                 Console.WriteLine("PASS: packaged UI initializes without microphone access or ChatGPT navigation");
             }
             catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }

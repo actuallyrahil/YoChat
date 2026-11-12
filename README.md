@@ -37,8 +37,8 @@ needs to stay on your screen.
   follows. It leaves room for prompt cards when their bounds are available.
 - **A small desktop footprint.** Up to five complete messages, with a full-message
   reader for oversized replies. Closing voice hides the bubbles.
-- **Local wake recognition.** Windows uses Windows Speech; the experimental
-  Mac/Linux versions use Vosk. No API key or separate cloud transcription service.
+- **Local wake recognition.** All versions use Vosk; Windows includes a bundled
+  English wake model with an explicit unknown-speech alternative. No API key or separate cloud transcription service.
 - **Tray/menu-bar controls.** Pause listening, change settings, check the
   transcript connection, or exit. Windows also offers optional start on login.
 
@@ -66,7 +66,7 @@ and the [live test checklist](experimental/README.md#first-live-test-checklist).
 | Operating system | Choose a version from the platform table above. Windows ARM64 is untested. |
 | ChatGPT | A signed-in desktop build with the native floating voice pill and the transcript source below |
 | ChatGPT UI language | English control names are used to locate the pill |
-| Microphone | OS microphone permission; Windows Speech on Windows, a local Vosk model on Mac/Linux |
+| Microphone | OS microphone permission; a local Vosk model (bundled English model on Windows) |
 | Browser version | Not supported |
 | API key | Not required |
 
@@ -125,12 +125,14 @@ cd YoChat
 
 The installer runs the tests, builds the app with .NET included, installs it
 under `%LOCALAPPDATA%\Programs\YoChat`, creates a Start Menu shortcut, and starts
-listening. Building requires internet access to restore dependencies. YoChat
+listening. Building requires internet access to restore dependencies and download
+the checksum-verified English wake model (about 40 MB). YoChat
 itself does not require administrator access.
 
 **Portable build:** when a release is available, download `YoChat-win-x64.zip`
 from [Releases](https://github.com/actuallyrahil/YoChat/releases), extract the
-**whole folder**, and run `YoChat.exe`. No separate .NET installation is needed.
+**whole folder**, and run `YoChat.exe`. The .NET runtime and wake model are included. Keep the `models` folder beside
+`YoChat.exe`; do not copy the executable on its own.
 If no release is listed yet, use the source instructions above.
 
 If you used OkayCodex or an earlier bubble prototype, exit those utilities first
@@ -217,6 +219,11 @@ or autostart entry is installed.
 | Live bubbles | Enabled | Show or hide the transcript overlay |
 | Transcript file | Automatic | Override the source path if needed |
 
+The Windows wake phrase must use words in the bundled English model. An
+activation requires the complete phrase: extra words, unknown speech, and low
+confidence results are rejected. No fuzzy matches or phrase-substring matches
+are accepted. Lowering confidence can increase accidental activations.
+
 Changes apply when saved. Settings are kept separately for each version:
 
 | Version | Settings location |
@@ -232,11 +239,11 @@ detected call. Unknown or stale state blocks activation.
 
 ## Privacy
 
-Wake recognition runs locally through Windows Speech or Vosk. YoChat does not
+Wake recognition runs locally through Vosk. YoChat does not
 save or upload microphone audio, write transcript logs, or make runtime network
 requests. It reads the existing transcript file without modifying it and keeps
-displayed text in memory. The experimental installers download dependencies and
-a speech model once; the running app does not download them. Settings and the
+displayed text in memory. The installers download dependencies and
+a speech model; the running app does not download them. Settings and the
 installed model are stored locally, not voice recordings.
 
 **ChatGPT’s voice service still has its own network use, privacy settings, and
@@ -246,7 +253,7 @@ local storage.** Local wake recognition does not make ChatGPT voice offline.
 
 | Symptom | What to check |
 | --- | --- |
-| “Yo Chat” does nothing | Check tray status, listening is enabled, microphone permissions, default input device, and Windows Speech language or Vosk model. Try slightly lowering confidence. |
+| “Yo Chat” does nothing | Check tray status, listening is enabled, microphone permissions, default input device, and installed Vosk model. Try slightly lowering confidence. |
 | Wake detected, but no pill | Test the hotkey yourself. It must match ChatGPT’s shortcut, and ChatGPT must already be running. |
 | Pill appears, but no messages | Check tray connection status and whether the continuity file updates during voice. Speak a new sentence; old messages are deliberately suppressed at startup. |
 | Transcript updates, but bubbles stay hidden | Confirm English ChatGPT UI and supported pill controls. Run both apps at the same privilege level. |
@@ -270,7 +277,7 @@ transcript.** Redact messages and personal details from screenshots.
 | Component | Windows | Experimental Mac / Linux |
 | --- | --- | --- |
 | UI | Windows Forms + WPF | Python + Qt/PySide6 |
-| Wake recognition | System.Speech | Vosk + sounddevice |
+| Wake recognition | Vosk + NAudio | Vosk + sounddevice |
 | Pill access | Windows UI Automation | Apple Accessibility via Swift / AT-SPI |
 | Shortcut | Windows key events | Native Mac key events / X11 |
 
@@ -281,7 +288,7 @@ chat messages.
 
 ## Development and contributions
 
-**Windows development** uses C#, .NET 10, Windows Forms, WPF, and System.Speech:
+**Windows development** uses C#, .NET 10, Windows Forms, WPF, Vosk, and NAudio:
 
 ```powershell
 .\scripts\test.ps1
@@ -291,6 +298,8 @@ dotnet run --project .\src\YoChat\YoChat.csproj
 
 The portable output is `artifacts/YoChat-win-x64/`. Run `YoChat.exe --self-test`
 from that folder for packaged UI checks without accessing the microphone.
+The Windows CI workflow also replays nine synthetic audio fixtures through the
+real decoder and checks that only the complete wake phrase activates.
 See [verification notes](VERIFICATION.md) for what was tested and what still
 needs a normal desktop voice-session check.
 
@@ -330,7 +339,8 @@ installed. On every platform, leave ChatGPT’s files alone.
 direct-transcript bubble prototype, with separate experimental Mac/Linux ports.
 See [NOTICE.md](NOTICE.md). Dependencies retain their own licenses, including
 [Qt, Vosk and model licensing](experimental/README.md#privacy-and-third-party-components)
-for the experimental versions.
+for the experimental versions. Windows Vosk/model and NAudio license notices
+are included under [`licenses/`](licenses/).
 
 YoChat is an independent, experimental companion. It is not affiliated with or
 endorsed by OpenAI.
