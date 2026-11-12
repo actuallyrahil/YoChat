@@ -20,4 +20,4 @@ See README for the internal transcript-format and English UI requirements.
 
 Duplicate-source regression: verified exact-neighbor collapse, source cleanup,
 repeated turns, different wording, and the five-message limit with synthetic data.
-A fresh live voice check remains outstanding.
+The user confirmed the duplicate-transcript fix in a live call on 12 November 2026.
