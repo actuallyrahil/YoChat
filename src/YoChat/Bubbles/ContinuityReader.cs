@@ -13,7 +13,14 @@ sealed class ContinuityReader {
    int index=0;var items=new List<VoiceRow>();
    foreach(var item in thread.Value.GetProperty("items").EnumerateArray()){
     var role=item.GetProperty("role").GetString();var text=item.GetProperty("text").GetString();
-    if(role is "user" or "assistant"&& !string.IsNullOrWhiteSpace(text))items.Add(new(role,text,thread.Name+":"+index++));
+        if(role is "user" or "assistant" && !string.IsNullOrWhiteSpace(text)) {
+     // The continuity source can publish adjacent duplicate completed segments.
+     // With no source IDs, only collapse exact same-speaker neighbors; never
+     // merge prefixes, fuzzy matches, or repeats across another speaker's turn.
+     if(items.Count > 0 && items[^1].Speaker == role &&
+        string.Equals(items[^1].Text, text, StringComparison.Ordinal)) continue;
+     items.Add(new(role,text,thread.Name+":"+index++));
+    }
    }
    next[thread.Name]=items.TakeLast(5).ToArray();
   }
@@ -36,4 +43,5 @@ sealed class ContinuityReader {
   Console.WriteLine("PASS: direct transcript updates, no old-call startup flash, new-call tracking and partial-write recovery");
  }
 }
+
 

@@ -25,6 +25,7 @@ var tests = new (string Name, Action Run)[]
     ("Suppress handoff while ChatGPT captures", SuppressHandoffWhileChatGptCaptures),
     ("Suppress handoff when capture state is unknown", SuppressHandoffWhenStateIsUnknown),
     ("Direct transcript and repeated calls", ContinuityReader.Test),
+    ("Duplicate transcript regression", TranscriptRegressionTests.Run),
     ("Pill motion and prompt clearance", MotionTests.Run),
     ("Transcript parser", LiveModel.Test),
     ("YoChat defaults and settings round trip", YoChatSettings),
@@ -159,5 +160,6 @@ static void TranscriptPaths()
     Assert(YoChat.BubbleEngine.ResolveTranscriptPath(configured) == Path.GetFullPath(configured), "Explicit source must take precedence.");
     Assert(Path.GetFileName(YoChat.BubbleEngine.ResolveTranscriptPath("")) == "realtime-voice-continuity.json", "Default source must be the direct transcript.");
 }
+
 
 

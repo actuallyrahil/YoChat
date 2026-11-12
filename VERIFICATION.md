@@ -2,7 +2,7 @@
 
 Version 0.1.0, Windows x64, 12 November 2026.
 
-- All 14 automated tests passed: wake matching, confidence, cooldown, hotkeys,
+- All 15 automated tests passed: wake matching, confidence, cooldown, hotkeys,
   microphone handoff, settings persistence, transcript updates and repeated-call
   reset, partial-write recovery, placement and prompt clearance.
 - Self-contained publish succeeded. The published executable's `--self-test`
@@ -16,3 +16,8 @@ The newly combined tray application still needs a full microphone/voice session
 check on a normal desktop. Automated checks do not establish compatibility with
 every ChatGPT build. GitHub Actions has been supplied but has not run remotely.
 See README for the internal transcript-format and English UI requirements.
+
+
+Duplicate-source regression: verified exact-neighbor collapse, source cleanup,
+repeated turns, different wording, and the five-message limit with synthetic data.
+A fresh live voice check remains outstanding.

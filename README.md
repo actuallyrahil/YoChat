@@ -64,6 +64,11 @@ installation may not produce it. During an active voice call, the file must
 exist and update for live bubbles to work. YoChat reports a missing source in
 its tray status; it does not open a full chat window to work around it.
 
+Adjacent entries with exactly the same speaker and text are shown once, because
+the source can publish duplicate segments. Without message IDs, identical
+back-to-back utterances from one speaker are indistinguishable; repeats across
+another speaker's turn and different wording are preserved.
+
 YoChat respects `CODEX_HOME` if set. You can also choose a transcript file in
 Settings. The supported format has `version: 1` and per-thread `items` containing
 `role` and `text`. Future desktop updates may change this integration.
@@ -227,3 +232,4 @@ direct-transcript bubble prototype. See [NOTICE.md](NOTICE.md).
 
 YoChat is an independent, experimental companion. It is not affiliated with or
 endorsed by OpenAI.
+
