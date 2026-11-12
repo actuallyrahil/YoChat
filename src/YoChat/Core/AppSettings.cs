@@ -2,6 +2,10 @@ namespace YoChat.Core;
 
 public sealed class AppSettings
 {
+    public string UserBubbleColor { get; set; } = "#4A79EB";
+    public string AssistantBubbleColor { get; set; } = "#303035";
+    public static string NormalizeColor(string? value, string fallback) =>
+        value is not null && System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9a-fA-F]{6}$") ? value.ToUpperInvariant() : fallback;
     public const string DefaultWakePhrase = "Yo Chat";
     public bool BubblesEnabled { get; set; } = true;
     public string TranscriptPath { get; set; } = "";
@@ -23,6 +27,8 @@ public sealed class AppSettings
 
         return new AppSettings
         {
+            UserBubbleColor = NormalizeColor(UserBubbleColor, "#4A79EB"),
+            AssistantBubbleColor = NormalizeColor(AssistantBubbleColor, "#303035"),
             BubblesEnabled = BubblesEnabled,
             TranscriptPath = TranscriptPath?.Trim() ?? "",
             WakePhrase = WakePhraseGate.Normalize(WakePhrase) is { Length: > 0 } phrase
@@ -36,6 +42,8 @@ public sealed class AppSettings
 
     public AppSettings Copy() => new()
     {
+        UserBubbleColor = UserBubbleColor,
+        AssistantBubbleColor = AssistantBubbleColor,
         BubblesEnabled = BubblesEnabled,
         TranscriptPath = TranscriptPath,
         WakePhrase = WakePhrase,

@@ -10,7 +10,7 @@ from PySide6.QtCore import QLockFile, QPoint, QRectF, Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon, QPainter, QPainterPath, QPixmap
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QDialogButtonBox,
     QDoubleSpinBox, QFormLayout, QLabel, QLineEdit, QMenu, QMessageBox,
-    QSpinBox, QSystemTrayIcon, QWidget)
+    QSpinBox, QSystemTrayIcon, QWidget, QColorDialog, QPushButton)
 
 from .core import Settings, data_dir, placement
 from .engine import Engine
@@ -24,6 +24,7 @@ class Bubbles(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
         self.setWindowTitle('YoChat Experimental Bubbles')
         self.setFont(QFont('Helvetica Neue' if sys.platform == 'darwin' else 'Noto Sans', 11))
+        self.user_color = "#4A79EB"; self.assistant_color = "#303035"
         self.drawn = []
         self.last_rows = None
         self.last_budget = None
@@ -58,10 +59,13 @@ class Bubbles(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(Qt.PenStyle.NoPen)
         for rect, role, text, shown, full in self.drawn:
-            painter.setBrush(QColor('#4A79EB' if role == 'user' else '#303035'))
+            color = QColor(self.user_color if role == 'user' else self.assistant_color)
+            painter.setBrush(color)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRoundedRect(rect, 19, 19)
-            painter.setPen(QColor('white'))
+            channels = [c / 12.92 if c <= .04045 else ((c + .055) / 1.055) ** 2.4 for c in (color.redF(), color.greenF(), color.blueF())]
+            luminance = sum(c * w for c, w in zip(channels, (.2126, .7152, .0722)))
+            painter.setPen(QColor('black' if luminance > .179 else 'white'))
             painter.drawText(rect.adjusted(14, 8, -14, -8), Qt.TextFlag.TextWordWrap | Qt.AlignmentFlag.AlignVCenter, shown)
 
     def mousePressEvent(self, event):
@@ -94,15 +98,25 @@ class SettingsDialog(QDialog):
         layout.addRow('Transcript file', self.transcript)
         self.model = QLineEdit(config.model); self.model.setPlaceholderText('Bundled English model')
         layout.addRow('Vosk model folder', self.model)
+        self.user_color = QPushButton(config.user_color)
+        self.assistant_color = QPushButton(config.assistant_color)
+        for label, button in [('Your message colour', self.user_color), ('Reply colour', self.assistant_color)]:
+            layout.addRow(label, button)
+            button.clicked.connect(lambda checked=False, b=button: self.choose_color(b))
         self.error = QLabel(); self.error.setWordWrap(True); layout.addRow(self.error)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.check); buttons.rejected.connect(self.reject); layout.addRow(buttons)
         self.result_settings = None
 
+    def choose_color(self, button):
+        color = QColorDialog.getColor(QColor(button.text()), self, 'Message colour')
+        if color.isValid():
+            button.setText(color.name().upper())
+
     def check(self):
         try:
             self.result_settings = Settings(self.phrase.text(), self.hotkey.text(), self.confidence.value(),
-                self.cooldown.value(), self.gap.value(), self.bubbles.isChecked(), self.transcript.text(), self.model.text()).validate()
+                self.cooldown.value(), self.gap.value(), self.bubbles.isChecked(), self.transcript.text(), self.model.text(), self.user_color.text(), self.assistant_color.text()).validate()
             self.accept()
         except ValueError as error:
             self.error.setText(str(error))
@@ -177,6 +191,9 @@ class Controller:
             self.view.hide(); return
         area = screen.availableGeometry()
         budget = int(min(480, pill['top'] - self.config.gap - area.top()))
+        if (self.view.user_color, self.view.assistant_color) != (self.config.user_color, self.config.assistant_color):
+            self.view.user_color = self.config.user_color; self.view.assistant_color = self.config.assistant_color
+            self.view.update()
         self.view.render_rows(state['rows'], budget)
         target = placement(pill['x'], pill['top'], self.view.width(), self.view.height(), self.config.gap,
                            (area.x(), area.y(), area.width(), area.height()))

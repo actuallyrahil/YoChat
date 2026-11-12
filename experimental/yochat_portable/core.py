@@ -1,6 +1,7 @@
 """Pure models: no microphone, native UI, or network access."""
 import json
 import math
+import re
 import os
 import sys
 from dataclasses import asdict, dataclass
@@ -40,8 +41,13 @@ class Settings:
     bubbles: bool = True
     transcript: str = ''
     model: str = ''
+    user_color: str = '#4A79EB'
+    assistant_color: str = '#303035'
 
     def validate(self):
+        for name in ('user_color', 'assistant_color'):
+            if not isinstance(getattr(self, name), str) or not re.fullmatch(r'#[0-9a-fA-F]{6}', getattr(self, name)):
+                raise ValueError('Choose a message colour in #RRGGBB format.')
         for name in ('phrase', 'hotkey', 'transcript', 'model'):
             if not isinstance(getattr(self, name), str):
                 raise ValueError(f'{name} must be text.')

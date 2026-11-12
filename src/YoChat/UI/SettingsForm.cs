@@ -4,6 +4,19 @@ namespace YoChat.UI;
 
 public sealed class SettingsForm : Form
 {
+    private readonly Button _userColor = new() { AutoSize = true, MaximumSize = new Size(0, 32) };
+    private readonly Button _assistantColor = new() { AutoSize = true, MaximumSize = new Size(0, 32) };
+    private static void SetColor(Button button, string value) {
+        button.Tag = value; button.Text = "Choose...  " + value;
+        button.BackColor = ColorTranslator.FromHtml(value);
+        button.ForeColor = button.BackColor.GetBrightness() > .55f ? Color.Black : Color.White;
+        button.UseVisualStyleBackColor = false;
+    }
+    private void ChooseColor(Button button) {
+        using var picker = new ColorDialog { Color = button.BackColor, FullOpen = true };
+        if (picker.ShowDialog(this) == DialogResult.OK)
+            SetColor(button, $"#{picker.Color.R:X2}{picker.Color.G:X2}{picker.Color.B:X2}");
+    }
     private readonly TextBox _wakePhrase = new();
     private readonly TextBox _hotkey = new();
     private readonly NumericUpDown _confidence = new();
@@ -20,7 +33,7 @@ public sealed class SettingsForm : Form
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
-        ClientSize = new Size(560, 460);
+        ClientSize = new Size(560, 560);
         Font = new Font("Segoe UI", 9F);
 
         _wakePhrase.Text = settings.WakePhrase;
@@ -37,6 +50,11 @@ public sealed class SettingsForm : Form
         _cooldown.Maximum = 30;
         _cooldown.Value = settings.CooldownSeconds;
 
+        settings = settings.Normalized();
+        SetColor(_userColor, settings.UserBubbleColor);
+        SetColor(_assistantColor, settings.AssistantBubbleColor);
+        _userColor.Click += (_, _) => ChooseColor(_userColor);
+        _assistantColor.Click += (_, _) => ChooseColor(_assistantColor);
         BuildLayout();
     }
 
@@ -49,8 +67,9 @@ public sealed class SettingsForm : Form
             Dock = DockStyle.Fill,
             Padding = new Padding(18),
             ColumnCount = 2,
-            RowCount = 10
+            RowCount = 12
         };
+        for (int row = 0; row < 12; row++) layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 145));
         layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
@@ -79,13 +98,15 @@ public sealed class SettingsForm : Form
         };
         AddRow(layout, 5, "Bubbles", _bubbles);
         AddRow(layout, 6, "Transcript file", _transcriptPath);
-        layout.Controls.Add(privacy, 0, 7);
+        AddRow(layout, 7, "Your message colour", _userColor);
+        AddRow(layout, 8, "Reply colour", _assistantColor);
+        layout.Controls.Add(privacy, 0, 9);
         layout.SetColumnSpan(privacy, 2);
 
         _validation.AutoSize = true;
         _validation.ForeColor = Color.Firebrick;
         _validation.Margin = new Padding(3, 2, 3, 8);
-        layout.Controls.Add(_validation, 0, 8);
+        layout.Controls.Add(_validation, 0, 10);
         layout.SetColumnSpan(_validation, 2);
 
         var save = new Button { Text = "Save", AutoSize = true };
@@ -100,7 +121,7 @@ public sealed class SettingsForm : Form
         };
         buttons.Controls.Add(save);
         buttons.Controls.Add(cancel);
-        layout.Controls.Add(buttons, 0, 9);
+        layout.Controls.Add(buttons, 0, 11);
         layout.SetColumnSpan(buttons, 2);
 
         AcceptButton = save;
@@ -133,6 +154,8 @@ public sealed class SettingsForm : Form
 
         Result = new AppSettings
         {
+            UserBubbleColor = (string)_userColor.Tag!,
+            AssistantBubbleColor = (string)_assistantColor.Tag!,
             BubblesEnabled = _bubbles.Checked,
             TranscriptPath = _transcriptPath.Text.Trim(),
             WakePhrase = phrase,

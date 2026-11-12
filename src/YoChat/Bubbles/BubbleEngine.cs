@@ -16,6 +16,7 @@ sealed class BubbleEngine : IDisposable
     long positionAt, transcriptAt;
     double clearance = 28;
     bool enabled = true;
+    string userColor="#4A79EB", assistantColor="#303035";
     int generation;
     string status = "Bubbles: waiting for voice";
     public string Status { get { lock (gate) return status; } }
@@ -49,7 +50,7 @@ sealed class BubbleEngine : IDisposable
     bool Wait(int milliseconds) => cancellation.Token.WaitHandle.WaitOne(milliseconds);
     ViewSnapshot Read()
     {
-        lock (gate) return new(enabled ? pill : new(false, 0, 0), rows, clearance, positionAt, transcriptAt);
+        lock (gate) return new(enabled ? pill : new(false, 0, 0), rows, clearance, positionAt, transcriptAt, userColor, assistantColor);
     }
     public void BeginCall()
     {
@@ -86,7 +87,7 @@ sealed class BubbleEngine : IDisposable
             {
                 var config = settings(); var path = ResolveTranscriptPath(config.TranscriptPath);
                 var currentGeneration = Volatile.Read(ref generation);
-                lock (gate) enabled = config.BubblesEnabled;
+                lock (gate) { enabled = config.BubblesEnabled; userColor = AppSettings.NormalizeColor(config.UserBubbleColor,"#4A79EB"); assistantColor = AppSettings.NormalizeColor(config.AssistantBubbleColor,"#303035"); }
                 if (previousGeneration != currentGeneration || previousPath != path || !config.BubblesEnabled)
                 {
                     reader.Reset(); previousGeneration = currentGeneration; previousPath = path;

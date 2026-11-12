@@ -29,6 +29,7 @@ var tests = new (string Name, Action Run)[]
     ("Hotkey parsing and canonical format", HotkeyParsing),
     ("Hotkey validation", HotkeyValidation),
     ("Settings normalization", SettingsNormalization),
+    ("Custom colour persistence and validation", ColourSettings),
     ("Handoff when ChatGPT is idle", HandoffWhenChatGptIsIdle),
     ("Suppress handoff while ChatGPT captures", SuppressHandoffWhileChatGptCaptures),
     ("Suppress handoff when capture state is unknown", SuppressHandoffWhenStateIsUnknown),
@@ -167,4 +168,12 @@ static void TranscriptPaths()
     var configured = Path.Combine(Path.GetTempPath(), "custom-voice.json");
     Assert(YoChat.BubbleEngine.ResolveTranscriptPath(configured) == Path.GetFullPath(configured), "Explicit source must take precedence.");
     Assert(Path.GetFileName(YoChat.BubbleEngine.ResolveTranscriptPath("")) == "realtime-voice-continuity.json", "Default source must be the direct transcript.");
+}
+
+static void ColourSettings() {
+    var config = new AppSettings { UserBubbleColor="#abcdef", AssistantBubbleColor="#FFFFFF" }.Normalized();
+    var restored = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(System.Text.Json.JsonSerializer.Serialize(config.Copy()))!;
+    Assert(restored.UserBubbleColor=="#ABCDEF" && restored.AssistantBubbleColor=="#FFFFFF", "Custom colours must survive copying and persistence.");
+    Assert(new AppSettings { UserBubbleColor="invalid", AssistantBubbleColor=null! }.Normalized().UserBubbleColor=="#4A79EB", "Invalid colours must fall back safely.");
+    Assert(new AppSettings { AssistantBubbleColor=null! }.Normalized().AssistantBubbleColor=="#303035", "Null colour must fall back safely.");
 }

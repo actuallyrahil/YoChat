@@ -10,6 +10,15 @@ def snapshot(*rows):
 
 
 class CoreTests(unittest.TestCase):
+    def test_custom_colours(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'settings.json'
+            Settings(user_color='#FFFFFF', assistant_color='#123456').save(path)
+            restored = Settings.load(path)
+            self.assertEqual((restored.user_color, restored.assistant_color), ('#FFFFFF', '#123456'))
+        with self.assertRaises(ValueError):
+            Settings(user_color='invalid').validate()
+
     def test_baseline_and_duplicate_updates(self):
         r = Transcript()
         r.update(snapshot(('user', 'Old')))

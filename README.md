@@ -344,3 +344,7 @@ are included under [`licenses/`](licenses/).
 
 YoChat is an independent, experimental companion. It is not affiliated with or
 endorsed by OpenAI.
+
+### Message colours
+
+Open **Settings** from the YoChat tray icon (menu bar on macOS). Choose **Your message colour** and **Reply colour**, then **Save**. Colours are saved and apply to live bubbles immediately; text switches between black and white for readability. Defaults: `#4A79EB` and `#303035`. Available on Windows and experimental macOS/Linux.
