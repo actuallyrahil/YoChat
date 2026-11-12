@@ -1,5 +1,9 @@
 # YoChat — ChatGPT voice overlay for Windows
 
+**macOS and Linux:** separate [experimental versions](experimental/README.md)
+are available as source installs. Native live-call testing is pending; Linux
+initially requires X11. The working Windows version below is unchanged.
+
 **Say “Yo Chat.” Talk to ChatGPT. Read the conversation without leaving your app.**
 
 YoChat is an open-source Windows tray app that adds a configurable **wake word**

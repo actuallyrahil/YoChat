@@ -9,3 +9,8 @@ artifacts/
 settings.json
 *continuity*.json
 *status*.json
+**/__pycache__/
+**/*.pyc
+experimental/.venv/
+experimental/models/
+experimental/native/MacBridge

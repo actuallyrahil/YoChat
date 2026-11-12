@@ -1,0 +1,55 @@
+name: Experimental Mac and Linux
+on:
+  push:
+    paths: ['experimental/**', '.github/workflows/experimental.yml']
+  pull_request:
+    paths: ['experimental/**', '.github/workflows/experimental.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: experimental
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Linux system libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y python3-pyatspi libportaudio2 libxcb-cursor0 libxkbcommon-x11-0
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Pure model tests and syntax
+        run: |
+          python -m unittest discover -s tests -v
+          python -m compileall -q yochat_portable setup-model.py
+          bash -n install-macos.sh install-linux.sh run.sh doctor.sh
+      - name: Compile Apple Accessibility helper
+        if: runner.os == 'macOS'
+        run: xcrun swiftc native/MacBridge.swift -o native/MacBridge -framework AppKit -framework ApplicationServices
+      - name: Linux AT-SPI import
+        if: runner.os == 'Linux'
+        run: /usr/bin/python3 -c 'import pyatspi'
+      - name: Dependency imports and offline UI smoke
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python -c 'import sounddevice, vosk, PySide6'
+          python -m yochat_portable.ui --smoke-test
+      - name: Package experimental source
+        run: |
+          mkdir -p ../artifacts
+          tar --exclude=.venv --exclude=__pycache__ --exclude=models --exclude=native/MacBridge -czf ../artifacts/YoChat-${{ runner.os }}-experimental.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: YoChat-${{ runner.os }}-experimental
+          path: artifacts/YoChat-*-experimental.tar.gz
