@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <Version>0.1.0</Version>
+    <Description>Local wake phrase and floating voice transcript bubbles for ChatGPT.</Description>
+  </PropertyGroup>
+  <ItemGroup><PackageReference Include="System.Speech" Version="10.0.0" /></ItemGroup>
+  <ItemGroup><InternalsVisibleTo Include="YoChat.Tests" /></ItemGroup>
+</Project>
