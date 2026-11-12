@@ -53,6 +53,8 @@ jobs:
       - name: Package experimental source
         run: |
           mkdir -p ../artifacts
+          cp ../LICENSE LICENSE
+          cp ../NOTICE.md NOTICE.md
           tar --exclude=.venv --exclude=__pycache__ --exclude=models --exclude=native/MacBridge -czf ../artifacts/YoChat-${{ runner.os }}-experimental.tar.gz .
       - uses: actions/upload-artifact@v4
         with:
