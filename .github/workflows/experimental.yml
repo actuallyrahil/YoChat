@@ -23,6 +23,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: experimental/requirements.txt
+      - name: Compile Apple Accessibility helper
+        if: runner.os == 'macOS'
+        run: xcrun swiftc native/MacBridge.swift -o native/MacBridge -framework AppKit -framework ApplicationServices
       - name: Linux system libraries
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y python3-pyatspi libportaudio2 libxcb-cursor0 libxkbcommon-x11-0 fonts-dejavu-core
@@ -33,9 +38,7 @@ jobs:
           python -m unittest discover -s tests -v
           python -m compileall -q yochat_portable setup-model.py
           bash -n install-macos.sh install-linux.sh run.sh doctor.sh
-      - name: Compile Apple Accessibility helper
-        if: runner.os == 'macOS'
-        run: xcrun swiftc native/MacBridge.swift -o native/MacBridge -framework AppKit -framework ApplicationServices
+
       - name: Linux AT-SPI import
         if: runner.os == 'Linux'
         run: /usr/bin/python3 -c 'import pyatspi'

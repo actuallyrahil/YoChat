@@ -1,4 +1,5 @@
 PySide6==6.10.2
-vosk==0.3.45
+vosk==0.3.44; sys_platform == 'darwin'
+vosk==0.3.45; sys_platform != 'darwin'
 sounddevice==0.5.3
 pynput==1.8.1; sys_platform == 'linux'
