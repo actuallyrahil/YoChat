@@ -73,7 +73,7 @@ Use an **X11 login session**. XWayland inside a Wayland session is not enough
 for this initial port. On Ubuntu/Debian install the system prerequisites:
 
 ```sh
-sudo apt install git python3-venv python3-pyatspi libportaudio2 libxcb-cursor0 libxkbcommon-x11-0
+sudo apt install git python3-venv python3-pyatspi libportaudio2 libxcb-cursor0 libxkbcommon-x11-0 libegl1 libopengl0 libgl1
 git clone https://github.com/actuallyrahil/YoChat.git
 cd YoChat/experimental
 bash install-linux.sh
