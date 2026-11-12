@@ -7,7 +7,7 @@ import sys
 import time
 
 from PySide6.QtCore import QLockFile, QPoint, QRectF, Qt, QTimer
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon, QPainter, QPixmap
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon, QPainter, QPainterPath, QPixmap
 from PySide6.QtWidgets import (QApplication, QCheckBox, QDialog, QDialogButtonBox,
     QDoubleSpinBox, QFormLayout, QLabel, QLineEdit, QMenu, QMessageBox,
     QSpinBox, QSystemTrayIcon, QWidget)
@@ -115,8 +115,13 @@ class Controller:
         self.view = Bubbles()
         pixmap = QPixmap(32, 32); pixmap.fill(Qt.GlobalColor.transparent)
         painter = QPainter(pixmap); painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(QColor('#4A79EB')); painter.setPen(Qt.PenStyle.NoPen); painter.drawEllipse(1, 1, 30, 30)
-        painter.setPen(QColor('white')); painter.drawText(pixmap.rect(), Qt.AlignmentFlag.AlignCenter, 'Y'); painter.end()
+        painter.setBrush(QColor('#4A79EB')); painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawRoundedRect(QRectF(2, 3, 28, 24), 7, 7)
+        tail = QPainterPath(); tail.moveTo(7, 24); tail.lineTo(6, 31); tail.lineTo(17, 25); tail.closeSubpath()
+        painter.drawPath(tail); painter.setBrush(QColor('white'))
+        for x in (7, 14, 21):
+            painter.drawEllipse(x, 13, 4, 4)
+        painter.end()
         self.tray = QSystemTrayIcon(QIcon(pixmap), app)
         self.tray.setToolTip('YoChat — Experimental')
         menu = QMenu()

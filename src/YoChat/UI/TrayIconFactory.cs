@@ -11,15 +11,23 @@ internal static class TrayIconFactory
         graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         graphics.Clear(Color.Transparent);
 
-        using var background = new SolidBrush(Color.FromArgb(34, 38, 46));
+        using var background = new SolidBrush(Color.FromArgb(74, 121, 235));
         using var status = new SolidBrush(color);
-        using var pen = new Pen(Color.White, 2.2f);
-
-        graphics.FillEllipse(background, 1, 1, 30, 30);
-        graphics.DrawArc(pen, 8, 6, 16, 18, 210, 300);
-        graphics.DrawLine(pen, 16, 23, 16, 27);
-        graphics.DrawLine(pen, 11, 27, 21, 27);
-        graphics.FillEllipse(status, 22, 3, 8, 8);
+        using var white = new SolidBrush(Color.White);
+        using var shape = new System.Drawing.Drawing2D.GraphicsPath();
+        shape.AddArc(2, 3, 12, 12, 180, 90);
+        shape.AddArc(18, 3, 12, 12, 270, 90);
+        shape.AddArc(18, 15, 12, 12, 0, 90);
+        shape.AddLine(14, 27, 6, 31);
+        shape.AddLine(6, 31, 7, 25);
+        shape.AddArc(2, 15, 12, 12, 90, 90);
+        shape.CloseFigure();
+        graphics.FillPath(background, shape);
+        graphics.FillEllipse(white, 7, 13, 4, 4);
+        graphics.FillEllipse(white, 14, 13, 4, 4);
+        graphics.FillEllipse(white, 21, 13, 4, 4);
+        graphics.FillEllipse(white, 21, 0, 11, 11);
+        graphics.FillEllipse(status, 23, 2, 7, 7);
 
         var handle = bitmap.GetHicon();
         try
